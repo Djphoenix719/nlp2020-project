@@ -132,4 +132,4 @@ dmypy.json
 .idea/**/*
 
 # My sandbox file
-sandbox.ipynb
+*.ipynb
