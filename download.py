@@ -106,13 +106,22 @@ def main():
         ('pf1e_3pp', 'https://www.d20pfsrd.com/bestiary/monster-listings/'),
     ]
 
-    for folder, url in tqdm(listing_urls, unit='sites', total=len(listing_urls), desc='Fetching all data...'):
+    print('Downloading all creature data... this will take a few hours...')
+    for folder, url in tqdm(
+            listing_urls,
+            unit='site',
+            total=len(listing_urls),
+            desc='Fetching all data...',
+            position=0,
+            leave=True):
+
         if folder == 'pf1e_3pp':
             process_3pp(folder, url)
         elif folder == 'dd35':
             process_realmshelps(folder, url)
         else:
             process_aonprd(folder, url)
+    print('All creature data downloaded; please run process.py to process creatures.')
 
 
 if __name__ == '__main__':
