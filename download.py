@@ -36,7 +36,7 @@ def process_common(folder: str, url: str) -> (str, BeautifulSoup, ParseResult):
     :param url:
     :return:
     """
-    path = os.path.join('raw', folder)
+    path = os.path.join('data', 'raw', folder)
     path = os.path.abspath(path)
 
     os.makedirs(path, exist_ok=True)
@@ -50,10 +50,7 @@ def process_common(folder: str, url: str) -> (str, BeautifulSoup, ParseResult):
 
 def process_3pp(folder: str, url: str) -> None:
     """
-    Process the d20pfsrd site
-    :param folder:
-    :param url:
-    :return:
+    Process a d20pfsrd for 3pp content
     """
     path, soup, site = process_common(folder, url)
 
@@ -63,17 +60,23 @@ def process_3pp(folder: str, url: str) -> None:
     download_all(path, links, 10)
 
 
-def process_other(folder: str, url: str) -> None:
+def process_realmshelps(folder: str, url: str) -> None:
+    path, soup, site = process_common(folder, url)
+
+    links = soup.find('table').find_all('a')
+    links = [f"http://{site.netloc}/{a['href']}" for a in links if "www." not in a['href']]
+
+    download_all(path, links, 0.5)
+
+
+def process_aonprd(folder: str, url: str) -> None:
     """
-    Process all non-d20pfsrd sites.
-    :param folder:
-    :param url:
-    :return:
+    Process all aonprd sites.
     """
     path, soup, site = process_common(folder, url)
 
     links = soup.find('table').find_all('a')
-    links = [f"http://{site.netloc}/{a['href']}" for a in links if "javascript" not in a["href"]]
+    links = [f"http://{site.netloc}/{a['href']}" for a in links]
 
     download_all(path, links, 0.5)
 
@@ -81,10 +84,6 @@ def process_other(folder: str, url: str) -> None:
 def download_all(folder: str, links: [str], delay: float):
     """
     Fetch all links, waiting the specified delay between each fetch.
-    :param folder:
-    :param links:
-    :param delay:
-    :return:
     """
     for idx, url in tqdm(enumerate(links), unit='pages', total=len(links), desc='Fetching monsters...'):
         request = requests.get(url)
@@ -110,8 +109,10 @@ def main():
     for folder, url in tqdm(listing_urls, unit='sites', total=len(listing_urls), desc='Fetching all data...'):
         if folder == 'pf1e_3pp':
             process_3pp(folder, url)
+        elif folder == 'dd35':
+            process_realmshelps(folder, url)
         else:
-            process_other(folder, url)
+            process_aonprd(folder, url)
 
 
 if __name__ == '__main__':
