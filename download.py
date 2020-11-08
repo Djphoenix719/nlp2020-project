@@ -4,7 +4,7 @@ import os
 from tqdm import tqdm
 from time import sleep
 from urllib.robotparser import RobotFileParser
-from urllib.parse import urlparse, urljoin, ParseResult
+from urllib.parse import urlparse, ParseResult
 
 
 def parse_robots(site: ParseResult) -> RobotFileParser:
@@ -28,7 +28,7 @@ def safe_file_name(file_name: str) -> str:
     return "".join([c for c in file_name if c.isalpha() or c.isdigit()]).strip().replace(' ', '_')
 
 
-def process_common(folder: str, url: str) -> (str, BeautifulSoup, ParseResult, int):
+def process_common(folder: str, url: str) -> (str, BeautifulSoup, ParseResult):
     """
     Complete tasks common to all sites. Fetches the index page, soupifies it, parses
     the site meta-data, and checks for a delay in robots.txt
@@ -36,22 +36,16 @@ def process_common(folder: str, url: str) -> (str, BeautifulSoup, ParseResult, i
     :param url:
     :return:
     """
-    path = os.path.join('data', 'raw', folder)
+    path = os.path.join('raw', folder)
     path = os.path.abspath(path)
 
     os.makedirs(path, exist_ok=True)
 
     site = urlparse(url)
-    robots = parse_robots(site)
-    try:
-        delay = int(robots.crawl_delay('*'))
-    except TypeError:
-        delay = 0
-
     html = requests.get(url)
     soup = BeautifulSoup(html.text, "html.parser")
 
-    return path, soup, site, delay
+    return path, soup, site
 
 
 def process_3pp(folder: str, url: str) -> None:
@@ -61,12 +55,12 @@ def process_3pp(folder: str, url: str) -> None:
     :param url:
     :return:
     """
-    path, soup, site, delay = process_common(folder, url)
+    path, soup, site = process_common(folder, url)
 
     links = soup.find('table').find_all('a')
-    links = [f"http://{site.netloc}/{a['href']}" for a in links if "(3pp)" in a.text]
+    links = [a['href'] for a in links if "(3pp)" in a.text]
 
-    download_all(path, links, delay)
+    download_all(path, links, 10)
 
 
 def process_other(folder: str, url: str) -> None:
@@ -76,15 +70,15 @@ def process_other(folder: str, url: str) -> None:
     :param url:
     :return:
     """
-    path, soup, site, delay = process_common(folder, url)
+    path, soup, site = process_common(folder, url)
 
     links = soup.find('table').find_all('a')
     links = [f"http://{site.netloc}/{a['href']}" for a in links if "javascript" not in a["href"]]
 
-    download_all(path, links, delay)
+    download_all(path, links, 0.5)
 
 
-def download_all(folder: str, links: [str], delay: int):
+def download_all(folder: str, links: [str], delay: float):
     """
     Fetch all links, waiting the specified delay between each fetch.
     :param folder:
@@ -97,7 +91,7 @@ def download_all(folder: str, links: [str], delay: int):
         soup = BeautifulSoup(request.text, "html.parser")
         title = soup.find('title').text.strip().replace(' ', '_')
 
-        file_name = f"{idx:05}_{title}.html"
+        file_name = f"{idx:05}_{safe_file_name(title)}.html"
         with open(os.path.join(folder, file_name), 'w', encoding='utf-8') as file:
             file.write(request.text)
 
@@ -114,7 +108,10 @@ def main():
     ]
 
     for folder, url in tqdm(listing_urls, unit='sites', total=len(listing_urls), desc='Fetching all data...'):
-        process_other(folder, url)
+        if folder == 'pf1e_3pp':
+            process_3pp(folder, url)
+        else:
+            process_other(folder, url)
 
 
 if __name__ == '__main__':
