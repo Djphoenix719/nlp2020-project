@@ -133,3 +133,6 @@ dmypy.json
 
 # My sandbox file
 *.ipynb
+
+# Run logs
+/runs/
