@@ -14,7 +14,7 @@ def main():
 
     # merge all files into the final training text file
     paths: [PurePath] = list(Path('data/processed').glob('**/*.txt'))
-    with open('data/train/all.txt', 'w', encoding='utf-8') as out_file:
+    with open('data/train.txt', 'w', encoding='utf-8') as out_file:
         for in_file in tqdm(paths, total=len(paths), unit='file', desc='Merging processed files'):
             out_file.writelines(in_file.read_text(encoding='utf-8'))
 
