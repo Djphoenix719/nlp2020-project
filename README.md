@@ -11,3 +11,7 @@
 3. Train the Model
 
 > `python -m train`
+
+4. Perform generation
+
+> `python -m generate`
