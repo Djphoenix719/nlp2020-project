@@ -136,3 +136,6 @@ dmypy.json
 
 # Run logs
 /runs/
+
+# Trained models
+/trained/**/*

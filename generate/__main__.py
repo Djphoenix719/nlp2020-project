@@ -1,43 +1,42 @@
-from argparse import ArgumentParser, ArgumentTypeError
-from typing import Callable
+from transformers import AutoTokenizer, GPT2LMHeadModel
 
 
 def main():
-    parser = ArgumentParser()
-    parser.add_argument(
-        '--model',
-        type=str,
-        default='distilgpt2',
-        help='Name of model to load, or path to model folder. '
-             'See https://huggingface.co/models for a list of available models.'
-    )
-    parser.add_argument(
-        '--model_path',
-        type=str,
-        default='trained',
-        help='Path to folder where final model was saved.',
-    )
-
-    args = parser.parse_args()
-
-    # lazy load these down here instead of at the start of the file
-    # this has the advantage of not having to load CUDA to parse arguments,
-    #  which has benefit if invalid arguments are entered
-    from transformers import AutoTokenizer, AutoModelWithLMHead
-
-    model = AutoModelWithLMHead.from_pretrained(args.model_path, return_dict=True)
+    model = GPT2LMHeadModel.from_pretrained('trained/distilgpt2', return_dict=True)
     tokenizer = AutoTokenizer.from_pretrained('distilgpt2')
 
-    model.eval()
-
-    print('Enter a prompt to generate a creature description, press Control+C to terminate.')
-    print('Works best if you add a sentence of padding text to start the output.')
     while True:
-        prompt = input('Enter a prompt > ')
-        inputs = tokenizer.encode(prompt, add_special_tokens=False, return_tensors="pt")
-        outputs = model.generate(inputs, max_length=250, do_sample=True, top_p=0.95, top_k=60)
-        generated = tokenizer.decode(outputs[0])
-        print(generated)
+        print('-'*50)
+        print('Enter a prompt to generate a creature description, type "exit" to stop.')
+
+        prompt = input('Enter the creature name > ')
+        prompt = prompt.strip()
+        if prompt == "exit":
+            exit(1)
+
+        prompt = f"Describe a {prompt}."
+
+        padding = input('Enter the first sentence of the description > ')
+        padding = padding.strip()
+        if padding == "exit":
+            exit(1)
+
+        count = input('How many completions should be generated > ')
+        count = int(count)
+
+        for i in range(count):
+            print(f"({i}) {prompt}".center(50, '='))
+            inputs = tokenizer.encode(prompt + padding, add_special_tokens=False, return_tensors="pt")
+            outputs = model.generate(
+                inputs, max_length=250, min_length=80, do_sample=True, top_p=0.95, top_k=60, pad_token_id=50256
+            )
+
+            length = len(tokenizer.decode(inputs[0], skip_special_tokens=True, clean_up_tokenization_spaces=True))
+            generated = tokenizer.decode(outputs[0])[length:]
+            generated = generated.replace('<|endoftext|>', '')
+
+            print(f"{prompt}\n{padding}{generated}")
+        print('-'*50)
 
 
 if __name__ == '__main__':

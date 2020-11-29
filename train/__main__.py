@@ -65,10 +65,10 @@ def main():
     #  which has benefit if invalid arguments are entered
     from transformers import AutoTokenizer
     from transformers import TextDataset, DataCollatorForLanguageModeling
-    from transformers import Trainer, TrainingArguments, AutoModelWithLMHead
+    from transformers import Trainer, TrainingArguments, AutoModelForCausalLM
 
-    tokenizer = AutoTokenizer.from_pretrained('distilgpt2')
-    model = AutoModelWithLMHead.from_pretrained('distilgpt2')
+    tokenizer = AutoTokenizer.from_pretrained(args.model)
+    model = AutoModelForCausalLM.from_pretrained(args.model)
 
     train_dataset = TextDataset(
         tokenizer=tokenizer,
@@ -81,12 +81,13 @@ def main():
     )
 
     training_args = TrainingArguments(
-        output_dir=args.output_path,
+        output_dir=args.output,
         overwrite_output_dir=True,
         num_train_epochs=args.epochs,
         per_device_train_batch_size=32,
         save_steps=args.checkpoint_steps,
         save_total_limit=args.max_checkpoints,
+        prediction_loss_only=True,
         warmup_steps=50,
     )
     trainer = Trainer(
@@ -94,7 +95,6 @@ def main():
         args=training_args,
         data_collator=data_collator,
         train_dataset=train_dataset,
-        prediction_loss_only=True,
     )
 
     trainer.train()
