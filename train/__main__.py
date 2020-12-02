@@ -23,7 +23,7 @@ def main():
     parser.add_argument(
         '--model',
         type=str,
-        default='distilgpt2',
+        default='gpt2-medium',
         help='Name of model to load, or path to model folder. '
              'See https://huggingface.co/models for a list of available models.'
     )
@@ -98,7 +98,7 @@ def main():
     )
 
     trainer.train()
-    trainer.save_model(args.output_path)
+    trainer.save_model(args.output)
 
 
 if __name__ == '__main__':

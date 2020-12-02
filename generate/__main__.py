@@ -2,8 +2,8 @@ from transformers import AutoTokenizer, GPT2LMHeadModel
 
 
 def main():
-    model = GPT2LMHeadModel.from_pretrained('trained/distilgpt2', return_dict=True)
-    tokenizer = AutoTokenizer.from_pretrained('distilgpt2')
+    model = GPT2LMHeadModel.from_pretrained('trained/gpt2-medium', return_dict=True)
+    tokenizer = AutoTokenizer.from_pretrained('gpt2-medium')
 
     while True:
         print('-'*50)
