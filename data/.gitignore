@@ -2,4 +2,5 @@
 processed/**/*
 raw/**/*
 test/**/*
+train.txt
 cached_*_train.txt
