@@ -23,7 +23,7 @@ def main():
     parser.add_argument(
         '--model',
         type=str,
-        default='gpt2-medium',
+        default='gpt2-xl',
         help='Name of model to load, or path to model folder. '
              'See https://huggingface.co/models for a list of available models.'
     )

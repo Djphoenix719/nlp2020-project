@@ -1,4 +1,5 @@
 # Data files
 processed/**/*
 raw/**/*
+test/**/*
 cached_*_train.txt
