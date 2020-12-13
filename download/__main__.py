@@ -48,18 +48,6 @@ def process_common(folder: str, url: str) -> (str, BeautifulSoup, ParseResult):
     return path, soup, site
 
 
-def process_3pp(folder: str, url: str) -> None:
-    """
-    Process a d20pfsrd for 3pp content
-    """
-    path, soup, site = process_common(folder, url)
-
-    links = soup.find('table').find_all('a')
-    links = [a['href'] for a in links if "(3pp)" in a.text]
-
-    download_all(path, links, 10)
-
-
 def process_realmshelps(folder: str, url: str) -> None:
     path, soup, site = process_common(folder, url)
 
@@ -103,7 +91,6 @@ def main():
         ('pf2e', 'http://2e.aonprd.com/Monsters.aspx?Letter=All'),
         ('pf1e', 'http://aonprd.com/Monsters.aspx?Letter=All'),
         ('dd35', 'https://www.realmshelps.net/allmonsters.shtml'),
-        ('pf1e_3pp', 'https://www.d20pfsrd.com/bestiary/monster-listings/'),
     ]
 
     print('Downloading all creature data... this will take a few hours...')
@@ -115,9 +102,7 @@ def main():
             position=0,
             leave=True):
 
-        if folder == 'pf1e_3pp':
-            process_3pp(folder, url)
-        elif folder == 'dd35':
+        if folder == 'dd35':
             process_realmshelps(folder, url)
         else:
             process_aonprd(folder, url)
